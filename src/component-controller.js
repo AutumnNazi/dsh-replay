@@ -1,4 +1,4 @@
-const COMPONENT_MODULES = { history: 'dsh-replay/history', retry: 'dsh-replay/retry' };
+const COMPONENT_MODULES = { history: '@bxzy/dsh-replay/history', retry: '@bxzy/dsh-replay/retry' };
 export const COMPONENT_POLL_MS = 1000;
 
 export function createComponentController(ctx, components) {

@@ -8,8 +8,8 @@ function harness() {
   const stops = [];
   const components = Object.fromEntries(['history', 'retry'].map((key) => [key, { inject: [key], apply() {} }]));
   let response = { ok: true, value: { entries: [
-    { entryId: 'dsh-replay.history', moduleName: 'dsh-replay/history', enabled: true },
-    { entryId: 'dsh-replay.retry', moduleName: 'dsh-replay/retry', enabled: false },
+    { entryId: 'dsh-replay.history', moduleName: '@bxzy/dsh-replay/history', enabled: true },
+    { entryId: 'dsh-replay.retry', moduleName: '@bxzy/dsh-replay/retry', enabled: false },
   ] } };
   const ctx = {
     remote: { pluginInventory: { list: async () => response } },
@@ -35,10 +35,23 @@ test('native history enabled / retry disabled starts only the history fiber', as
 
 function inventory(history, retry) {
   return { ok: true, value: { entries: [
-    { entryId: 'include:dsh-replay.history', moduleName: 'dsh-replay/history', enabled: history },
-    { entryId: 'include:dsh-replay.retry', moduleName: 'dsh-replay/retry', enabled: retry },
+    { entryId: 'include:dsh-replay.history', moduleName: '@bxzy/dsh-replay/history', enabled: history },
+    { entryId: 'include:dsh-replay.retry', moduleName: '@bxzy/dsh-replay/retry', enabled: retry },
   ] } };
 }
+
+test('scoped native inventory ignores unscoped modules with the same stable Entry IDs', async () => {
+  const h = harness();
+  const scoped = inventory(true, false);
+  h.setResponse({ ok: true, value: { entries: [
+    ...scoped.value.entries,
+    ...inventory(false, true).value.entries.map((entry) => ({ ...entry, moduleName: entry.moduleName.replace('@bxzy/', '') })),
+  ] } });
+  const controller = createComponentController(h.ctx, h.components);
+  await controller.refresh();
+  assert.deepEqual(h.starts, ['history']);
+  await controller.dispose();
+});
 
 test('late native response after root disposal cannot revive either fiber', async () => {
   const h = harness();
@@ -48,8 +61,8 @@ test('late native response after root disposal cannot revive either fiber', asyn
   const request = controller.refresh();
   await controller.dispose();
   resolve({ ok: true, value: { entries: [
-    { entryId: 'dsh-replay.history', moduleName: 'dsh-replay/history', enabled: true },
-    { entryId: 'dsh-replay.retry', moduleName: 'dsh-replay/retry', enabled: true },
+    { entryId: 'dsh-replay.history', moduleName: '@bxzy/dsh-replay/history', enabled: true },
+    { entryId: 'dsh-replay.retry', moduleName: '@bxzy/dsh-replay/retry', enabled: true },
   ] } });
   await request;
   assert.deepEqual(h.starts, []);

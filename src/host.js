@@ -1,2 +1,2 @@
-export const name = 'dsh-replay';
+export const name = '@bxzy/dsh-replay';
 export function apply() {}

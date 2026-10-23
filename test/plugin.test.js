@@ -44,6 +44,7 @@ async function loadPlugin(react) {
     setTimeout,
     clearTimeout,
   });
+  assert.equal(registration.id, '@bxzy/dsh-replay');
   return registration.factory((name) => {
     if (name === 'react') return react;
     throw new Error('未授权的外部模块：' + name);
@@ -771,8 +772,8 @@ async function rootHarness(initial) {
 
 function nativeInventory(history, retry) {
   return { ok: true, value: { entries: [
-    { entryId: 'include:demo:dsh-replay.history', moduleName: 'dsh-replay/history', enabled: history },
-    { entryId: 'include:demo:dsh-replay.retry', moduleName: 'dsh-replay/retry', enabled: retry },
+    { entryId: 'include:demo:dsh-replay.history', moduleName: '@bxzy/dsh-replay/history', enabled: history },
+    { entryId: 'include:demo:dsh-replay.retry', moduleName: '@bxzy/dsh-replay/retry', enabled: retry },
   ] } };
 }
 

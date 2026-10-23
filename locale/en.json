@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Re:Play",
+    "title": "dsh-replay",
     "description": "Per-session input history and append-only prompt replay."
   }
 }

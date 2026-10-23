@@ -10,8 +10,10 @@ const root = new URL('../', import.meta.url);
 test('one package exposes two native Host identities with one grouped browser carrier', async () => {
   const pkg = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));
   const patch = await readFile(new URL('cordis.patch.yml', root), 'utf8');
-  assert.equal(pkg.name, 'dsh-replay');
-  assert.deepEqual([rootHost.name, historyHost.name, retryHost.name], ['dsh-replay', 'dsh-replay/history', 'dsh-replay/retry']);
+  assert.equal(pkg.name, '@bxzy/dsh-replay');
+  assert.deepEqual([rootHost.name, historyHost.name, retryHost.name], [pkg.name, pkg.name + '/history', pkg.name + '/retry']);
+  assert.deepEqual(patch.split('\n').filter((line) => line.trim().startsWith('- id:')).map((line) => line.trim().slice(6)), ['dsh-replay', 'dsh-replay.history', 'dsh-replay.retry']);
+  assert.deepEqual(patch.split('\n').filter((line) => line.trim().startsWith('name:')).map((line) => JSON.parse(line.trim().slice(6))), [pkg.name, pkg.name + '/history', pkg.name + '/retry']);
   for (const host of [rootHost, historyHost, retryHost]) assert.equal(typeof host.apply, 'function');
   assert.equal((patch.match(/group: true/g) ?? []).length, 1);
   assert.equal((patch.match(/    - id:/g) ?? []).length, 3);
@@ -26,8 +28,17 @@ test('one package exposes two native Host identities with one grouped browser ca
   assert.equal(pkg.dependencies, undefined);
 });
 
+test('public npm release uses the owned scope and the official registry without publishing from scripts', async () => {
+  const pkg = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));
+  assert.equal(pkg.name, '@bxzy/dsh-replay');
+  assert.equal(pkg.version, '0.2.0');
+  assert.deepEqual(pkg.publishConfig, { access: 'public', registry: 'https://registry.npmjs.org/' });
+  assert.ok(pkg.scripts.test.split(/\s+/).includes('test/release.test.js'));
+  for (const script of Object.values(pkg.scripts)) assert.ok(!/\bpublish\b/.test(script));
+});
+
 test('all exported locale metadata share complete keys and native component names', async () => {
-  const expected = [['', 'Re:Play', '回言'], ['history/', 'Input History', '输入历史'], ['retry/', 'Prompt Replay', '消息重试']];
+  const expected = [['', 'dsh-replay', 'dsh-replay'], ['history/', 'Input History', '输入历史'], ['retry/', 'Prompt Replay', '消息重试']];
   const pkg = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));
   for (const [prefix, enTitle, zhTitle] of expected) {
     const path = pkg.exports['./' + prefix + 'locale/*.json'];

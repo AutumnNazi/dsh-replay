@@ -1,8 +1,8 @@
 - insert:
     - id: dsh-replay
-      name: dsh-replay
+      name: "@bxzy/dsh-replay"
       group: true
     - id: dsh-replay.history
-      name: dsh-replay/history
+      name: "@bxzy/dsh-replay/history"
     - id: dsh-replay.retry
-      name: dsh-replay/retry
+      name: "@bxzy/dsh-replay/retry"

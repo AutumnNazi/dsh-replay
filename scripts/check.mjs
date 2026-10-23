@@ -7,7 +7,10 @@ const root = new URL('../', import.meta.url);
 const pkg = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));
 
 // ── 清单契约 ────────────────────────────────────────────────────────────────
-assert.equal(pkg.name, 'dsh-replay');
+assert.equal(pkg.name, '@bxzy/dsh-replay');
+assert.equal(pkg.version, '0.2.0');
+assert.deepEqual(pkg.publishConfig, { access: 'public', registry: 'https://registry.npmjs.org/' });
+assert.ok(pkg.scripts.test.split(/\s+/).includes('test/release.test.js'));
 assert.equal(pkg.type, 'module');
 assert.equal(pkg.main, './lib/index.js');
 assert.equal(pkg.dsh.manifestVersion, 1);
@@ -29,11 +32,12 @@ for (const file of ['lib/index.js', 'lib/client.js', 'cordis.patch.yml']) {
   assert.ok((await stat(new URL(file, root))).size > 0, file + ' 必须真实生成');
 }
 const patch = await readFile(new URL('cordis.patch.yml', root), 'utf8');
-assert.match(patch, /- insert:/);
-assert.match(patch, /id: dsh-replay\n\s+name: dsh-replay\n\s+group: true/);
-assert.match(patch, /id: dsh-replay.history\n\s+name: dsh-replay\/history/);
-assert.match(patch, /id: dsh-replay.retry\n\s+name: dsh-replay\/retry/);
-assert.match(patch, new RegExp('name: ' + pkg.name));
+assert.deepEqual(patch.trim().split(/\r?\n/).map((line) => line.trim()), [
+  '- insert:',
+  '- id: dsh-replay', 'name: ' + JSON.stringify(pkg.name), 'group: true',
+  '- id: dsh-replay.history', 'name: ' + JSON.stringify(pkg.name + '/history'),
+  '- id: dsh-replay.retry', 'name: ' + JSON.stringify(pkg.name + '/retry'),
+]);
 
 // ── 源码里不许出现 DOM 劫持 ──────────────────────────────────────────────────
 // 宿主 practices.md 明文禁止写别人组件的 DOM；本插件连读都不读 DOM，全部走服务面。
@@ -192,15 +196,16 @@ const rootClient = await readFile(new URL('src/client.js', root), 'utf8');
 assert.ok(!rootClient.includes('settings.section'));
 assert.ok(rootClient.includes('createComponentController'));
 assert.ok(rootClient.includes('clearInterval'));
-for (const [specifier, title] of [['', 'Re:Play'], ['history/', 'Input History'], ['retry/', 'Prompt Replay']]) {
+for (const [specifier, title] of [['', 'dsh-replay'], ['history/', 'Input History'], ['retry/', 'Prompt Replay']]) {
   const exported = './' + specifier + 'locale/*.json';
   const localePath = pkg.exports[exported].replace('*', 'en');
   const english = JSON.parse(await readFile(new URL(localePath, root), 'utf8'));
   const chinese = JSON.parse(await readFile(new URL(localePath.replace('/en.json', '/zh-cn.json'), root), 'utf8'));
   assert.equal(english.meta.title, title);
+  if (specifier === '') assert.equal(chinese.meta.title, 'dsh-replay');
   assert.deepEqual(Object.keys(english.meta), Object.keys(chinese.meta));
 }
-for (const [specifier, moduleName] of [['./history', 'dsh-replay/history'], ['./retry', 'dsh-replay/retry']]) {
+for (const [specifier, moduleName] of [['./history', pkg.name + '/history'], ['./retry', pkg.name + '/retry']]) {
   const entry = await import(new URL(pkg.exports[specifier], root));
   assert.equal(entry.name, moduleName);
   assert.equal(typeof entry.apply, 'function');

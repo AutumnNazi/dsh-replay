@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "回言",
+    "title": "dsh-replay",
     "description": "按会话隔离的输入历史与追加式消息重试。"
   }
 }
