@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Prompt Replay",
+    "description": "Append a previous user prompt again without overwriting the conversation."
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Input History",
+    "description": "Recall previous inputs with arrow keys without taking over normal caret movement."
+  }
+}

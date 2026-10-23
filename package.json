@@ -1,0 +1,61 @@
+{
+  "name": "dsh-replay",
+  "version": "0.1.0",
+  "author": {
+    "name": "AutumnNazi",
+    "email": "104422820+AutumnNazi@users.noreply.github.com"
+  },
+  "description": "Two independently managed native components for per-session input history and append-only prompt replay, with Chinese and English UI.",
+  "type": "module",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./history": "./lib/history-host.js",
+    "./retry": "./lib/retry-host.js",
+    "./locale/*.json": "./locale/*.json",
+    "./history/locale/*.json": "./locale/history/*.json",
+    "./retry/locale/*.json": "./locale/retry/*.json"
+  },
+  "files": [
+    "lib/",
+    "locale/",
+    "cordis.patch.yml",
+    "README.en.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test test/history-client.test.js test/history.test.js test/host.test.js test/locale.test.js test/native.test.js test/plugin.test.js test/retry-client.test.js test/retry.test.js"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "external": [
+        "react"
+      ],
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-shortcuts",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-api-remotes"
+      ]
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AutumnNazi/dsh-replay.git"
+  },
+  "homepage": "https://github.com/AutumnNazi/dsh-replay#readme",
+  "bugs": {
+    "url": "https://github.com/AutumnNazi/dsh-replay/issues"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Re:Play",
+    "description": "Per-session input history and append-only prompt replay."
+  }
+}
