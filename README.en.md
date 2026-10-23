@@ -4,7 +4,13 @@
 
 `dsh-replay` adds input history and user-message replay to DSH. The plugin card title stays `dsh-replay`, the repository is `AutumnNazi/dsh-replay`, and the npm installation name is **`@bxzy/dsh-replay`**. The **Input History** and **Prompt Replay** component titles still follow the DSH language.
 
-This README covers the native-component edition of `dsh-replay` and its latest behavior. Instructions for the custom settings page in the old `dsh-shuru` package do not apply to this edition.
+This README covers the v0.2.1 native-component edition of `dsh-replay` and its latest behavior. Instructions for the custom settings page in the old `dsh-shuru` package do not apply to this edition.
+
+## v0.2.1 loading fix
+
+The v0.2.0 root client declared only `remote.pluginInventory`, without the top-level `remote` injection. This caused `cannot get property "remote" without inject`: reading the native component inventory failed, preventing both Input History and Prompt Replay from starting. v0.2.1 adds that declaration. The fix passed build/check and 162 tests; this does not mean existing installations have been updated or recovery has been verified on a real installation.
+
+If installed from npm, manually check for updates in the DSH plugin management page, review the available 0.2.1 version, and click update yourself. Publishing does not update an existing installation automatically or change user configuration. After updating, recheck both components’ enabled states and actual behavior.
 
 ## Components and language
 
@@ -77,7 +83,7 @@ In the DSH plugin page, use “Add plugin” with the following repository sourc
 github:AutumnNazi/dsh-replay
 ```
 
-To pin v0.2.0 once the release tag is available, use `github:AutumnNazi/dsh-replay#v0.2.0`. The currently verified update gateway skips GitHub/Git sources, so it cannot detect or confirm updates for them. For later versions, manually select the source version and follow DSH prompts for installation and reload.
+To pin v0.2.1, use `github:AutumnNazi/dsh-replay#v0.2.1`. The currently verified update gateway skips GitHub/Git sources, so it cannot detect or confirm updates for them. For later versions, manually select the source version and follow DSH prompts for installation and reload.
 
 ## Native online updates
 
@@ -89,7 +95,7 @@ This plugin has no custom `UpdatePanel`, update API, independent background chec
 
 **Recheck enabled states after updating**: the current update gateway installs with `enabled: true`, so it does not guarantee preservation of a previously disabled plugin as a whole. Recheck the Input History and Prompt Replay native components and enable or disable each as needed. Both components and the Chinese/English dictionaries remain in the package; updating needs no extra settings page.
 
-The [v0.2.0 Release](https://github.com/AutumnNazi/dsh-replay/releases/tag/v0.2.0) page will provide `bxzy-dsh-replay-0.2.0.tgz` and `SHA256SUMS.txt` once the release is created. Compare the downloaded archive’s SHA-256 with the checksum file. Checksums detect file-integrity issues; they do not replace source or package-content verification and do not trigger installation.
+The archive name for the [v0.2.1 Release](https://github.com/AutumnNazi/dsh-replay/releases/tag/v0.2.1) is `bxzy-dsh-replay-0.2.1.tgz`; its checksum file is `SHA256SUMS.txt`. Compare the downloaded archive’s SHA-256 with the checksum file. Checksums detect file-integrity issues; they do not replace source or package-content verification and do not trigger installation.
 
 ## Development and checks
 
@@ -105,10 +111,10 @@ node --test test/*.test.js
 
 ### Release checksum file
 
-Release maintainers first pack with their existing package manager and verify the archive’s name is `@bxzy/dsh-replay`, its version is `0.2.0`, and its contents match the release-file allowlist. Do not include host source, temporary directories, dependency directories, or credentials. npm publishing uses the package-level `publishConfig.registry` set to `https://registry.npmjs.org/`; no global registry change is needed. The following script only reads a verified archive and generates its checksum file; it does not pack, install, or publish:
+Release maintainers first pack with their existing package manager and verify the archive’s name is `@bxzy/dsh-replay`, its version is `0.2.1`, and its contents match the release-file allowlist. Do not include host source, temporary directories, dependency directories, or credentials. npm publishing uses the package-level `publishConfig.registry` set to `https://registry.npmjs.org/`; no global registry change is needed. The following script only reads a verified archive and generates its checksum file; it does not pack, install, or publish:
 
 ```sh
-node scripts/release.mjs --archive ./bxzy-dsh-replay-0.2.0.tgz --out ./release-assets
+node scripts/release.mjs --archive ./bxzy-dsh-replay-0.2.1.tgz --out ./release-assets
 ```
 
 The archive basename must match the current `package.json`: `bxzy-dsh-replay-<version>.tgz`. Adjust the command’s filename when the version changes. The output directory receives `SHA256SUMS.txt`; the archive stays in place. Omitting `--out` uses a local temporary release directory. The script does not inspect TAR contents and cannot replace the package-content review above; it does not create a GitHub Release or run `npm publish`. Maintainers upload the archive and checksum file to the matching Release separately. Keep release assets out of Git.

@@ -8,7 +8,7 @@ const pkg = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));
 
 // ── 清单契约 ────────────────────────────────────────────────────────────────
 assert.equal(pkg.name, '@bxzy/dsh-replay');
-assert.equal(pkg.version, '0.2.0');
+assert.equal(pkg.version, '0.2.1');
 assert.deepEqual(pkg.publishConfig, { access: 'public', registry: 'https://registry.npmjs.org/' });
 assert.ok(pkg.scripts.test.split(/\s+/).includes('test/release.test.js'));
 assert.equal(pkg.type, 'module');
@@ -157,7 +157,7 @@ const api = registration.factory((name) => {
 });
 assert.deepEqual(externals, ['react'], '工厂函数只允许向宿主索取 react');
 assert.equal(typeof api.apply, 'function');
-assert.deepEqual(Array.from(api.inject), ['slots', 'conversation', 'shortcuts', 'sessions', 'locale', 'remote.pluginInventory']);
+assert.deepEqual(Array.from(api.inject), ['slots', 'conversation', 'shortcuts', 'sessions', 'locale', 'remote', 'remote.pluginInventory']);
 for (const name of ['createHistory', 'isFirstLine', 'isRecallTrigger', 'classifyInput', 'decideAction', 'createComposers']) {
   assert.equal(typeof api[name], 'function', '导出缺失：' + name);
 }

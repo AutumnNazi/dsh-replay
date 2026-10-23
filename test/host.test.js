@@ -31,7 +31,7 @@ test('one package exposes two native Host identities with one grouped browser ca
 test('public npm release uses the owned scope and the official registry without publishing from scripts', async () => {
   const pkg = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));
   assert.equal(pkg.name, '@bxzy/dsh-replay');
-  assert.equal(pkg.version, '0.2.0');
+  assert.equal(pkg.version, '0.2.1');
   assert.deepEqual(pkg.publishConfig, { access: 'public', registry: 'https://registry.npmjs.org/' });
   assert.ok(pkg.scripts.test.split(/\s+/).includes('test/release.test.js'));
   for (const script of Object.values(pkg.scripts)) assert.ok(!/\bpublish\b/.test(script));

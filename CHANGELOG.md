@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.1
+
+- 修复 v0.2.0 根客户端缺少顶层 `remote` 注入声明的问题：此前仅声明 `remote.pluginInventory`，会触发 `cannot get property "remote" without inject`，使原生组件清单读取失败，输入历史与消息重试均无法启动；v0.2.1 补齐声明。
+- 修复已通过 build/check 与 162 项测试验证；现有安装包尚未因此改变，不表示实机恢复已验证。npm 用户需在 DSH 插件管理页手动检查更新并自行点击更新，随后复查两个组件的启停与实际行为；不自动安装更新或改用户配置。
+- 版本、双语说明与 Release 归档示例同步为 0.2.1；插件卡片 `dsh-replay`、npm 包名 `@bxzy/dsh-replay` 及组件国际化保持不变。
+
 ## v0.2.0
 
 - 插件卡片名称固定为 `dsh-replay`，不再随语言显示为“回言”或 `Re:Play`；输入历史 / Input History、消息重试 / Prompt Replay 组件标题保持中英文国际化。

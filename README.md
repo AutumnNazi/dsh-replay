@@ -4,7 +4,13 @@
 
 `dsh-replay` 为 DSH 提供输入历史回翻与用户消息重试。插件卡片名称固定为 `dsh-replay`，仓库为 `AutumnNazi/dsh-replay`，npm 安装名为 **`@bxzy/dsh-replay`**；**输入历史**与**消息重试**组件标题仍跟随 DSH 语言。
 
-本文面向 `dsh-replay` 原生组件版，说明最新行为与使用方式；旧 `dsh-shuru` 的自建设置页说明不适用于本版本。
+本文面向 `dsh-replay` v0.2.1 原生组件版，说明最新行为与使用方式；旧 `dsh-shuru` 的自建设置页说明不适用于本版本。
+
+## v0.2.1 加载修复
+
+v0.2.0 的根客户端只声明了 `remote.pluginInventory`，缺少顶层 `remote` 注入声明，导致 `cannot get property "remote" without inject`：原生组件清单读取失败，输入历史和消息重试均无法启动。v0.2.1 补齐该声明；修复已通过 build/check 与 162 项测试验证，不表示现有安装包已经更新或实机已经恢复。
+
+已从 npm 安装的用户请在 DSH 插件管理页手动检查更新，查看可用的 0.2.1 并自行点击更新；发布不会自动更新已有安装，也不会替用户改配置。更新后请复查两个组件的启停与实际行为。
 
 ## 组件与语言
 
@@ -77,7 +83,7 @@ node scripts/build.mjs
 github:AutumnNazi/dsh-replay
 ```
 
-若要固定安装 v0.2.0，发布标签可用后使用 `github:AutumnNazi/dsh-replay#v0.2.0`。当前已核实的更新网关跳过 GitHub/Git 来源，不能通过它检测或确认这类来源的更新；后续版本需手动选择源码版本并按 DSH 提示处理安装与重载。
+若要固定安装 v0.2.1，使用 `github:AutumnNazi/dsh-replay#v0.2.1`。当前已核实的更新网关跳过 GitHub/Git 来源，不能通过它检测或确认这类来源的更新；后续版本需手动选择源码版本并按 DSH 提示处理安装与重载。
 
 ## 原生在线更新
 
@@ -89,7 +95,7 @@ github:AutumnNazi/dsh-replay
 
 **更新后复查启停状态**：当前更新网关以 `enabled: true` 执行安装，不能保证保留整个插件原先的停用状态；请复查输入历史与消息重试两个原生组件，并按需要分别启用或停用。两个组件与中英文字典随包保留，更新不需要额外设置页。
 
-[v0.2.0 Release](https://github.com/AutumnNazi/dsh-replay/releases/tag/v0.2.0) 页面在发布创建后提供 `bxzy-dsh-replay-0.2.0.tgz` 与 `SHA256SUMS.txt`。下载后可用 SHA-256 对照校验文件；校验和用于检查文件完整性，不代替来源与包内容核验，也不会触发安装。
+[v0.2.1 Release](https://github.com/AutumnNazi/dsh-replay/releases/tag/v0.2.1) 的归档文件名为 `bxzy-dsh-replay-0.2.1.tgz`，校验文件为 `SHA256SUMS.txt`。下载后可用 SHA-256 对照校验文件；校验和用于检查文件完整性，不代替来源与包内容核验，也不会触发安装。
 
 ## 开发与检查
 
@@ -105,10 +111,10 @@ node --test test/*.test.js
 
 ### Release 校验文件
 
-发布维护者先用已有包管理工具打包，并核对归档中的包名为 `@bxzy/dsh-replay`、版本为 `0.2.0` 及发布文件白名单；不要把宿主源码、临时目录、依赖目录或凭据放入发布包。npm 发布通过包级 `publishConfig.registry` 指向 `https://registry.npmjs.org/`，无需改全局 registry。以下脚本仅读取已验包并生成校验文件，不打包、不安装、不发布：
+发布维护者先用已有包管理工具打包，并核对归档中的包名为 `@bxzy/dsh-replay`、版本为 `0.2.1` 及发布文件白名单；不要把宿主源码、临时目录、依赖目录或凭据放入发布包。npm 发布通过包级 `publishConfig.registry` 指向 `https://registry.npmjs.org/`，无需改全局 registry。以下脚本仅读取已验包并生成校验文件，不打包、不安装、不发布：
 
 ```sh
-node scripts/release.mjs --archive ./bxzy-dsh-replay-0.2.0.tgz --out ./release-assets
+node scripts/release.mjs --archive ./bxzy-dsh-replay-0.2.1.tgz --out ./release-assets
 ```
 
 归档文件名必须为当前 `package.json` 对应的 `bxzy-dsh-replay-<version>.tgz`；版本变化后相应替换命令中的文件名。输出目录获得 `SHA256SUMS.txt`，归档保持原位；省略 `--out` 时写入本地临时发布目录。脚本不校验 TAR 内部内容，不能替代上面的包内容审查，也不会创建 GitHub Release 或运行 `npm publish`。维护者另行上传归档与校验文件到对应 Release；发布资产不纳入 Git。

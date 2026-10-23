@@ -3,7 +3,7 @@ import { injectMessageRetry, applyMessageRetry } from './retry-client.js';
 import { createReplayI18n } from './locale.js';
 import { createComponentController, COMPONENT_POLL_MS } from './component-controller.js';
 
-export const inject = ['slots', 'conversation', 'shortcuts', 'sessions', 'locale', 'remote.pluginInventory'];
+export const inject = ['slots', 'conversation', 'shortcuts', 'sessions', 'locale', 'remote', 'remote.pluginInventory'];
 
 export function apply(ctx) {
   ctx.effect(() => {

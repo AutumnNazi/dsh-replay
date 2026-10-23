@@ -732,18 +732,20 @@ test('翻到同文本的最旧记录仍定位文首，且不先清空文本', as
   host.dispose();
 });
 
-async function rootHarness(initial) {
+async function rootHarness(initial, { omitInject } = {}) {
   const { code } = await buildClientBundle();
-  let registration; const intervals = new Map(); const children = []; const effects = [];
+  let registration; const intervals = new Map(); const children = [];
+  const denied = []; const warnings = [];
   const listeners = new Set(); const rows = new Set(); const slots = []; const localeListeners = new Set();
   let response = initial; let calls = 0; let bindings = 0; let rootStop;
   vm.runInNewContext(code, {
-    window: { __ModuleLoader__: { load(value) { registration = value; } } }, console,
+    window: { __ModuleLoader__: { load(value) { registration = value; } } },
+    console: { ...console, warn(...args) { warnings.push(args); } },
     setInterval(fn, ms) { const token = {}; intervals.set(token, { fn, ms }); return token; },
     clearInterval(token) { intervals.delete(token); }, setTimeout, clearTimeout,
   });
   const api = registration.factory(() => ({ useEffect() {} }));
-  function context() {
+  function context(declared) {
     const cleanups = [];
     const ctx = {
       effect(fn) { const off = fn(); cleanups.push(off); return off; },
@@ -754,17 +756,29 @@ async function rootHarness(initial) {
       slots: { inject(_name, fn) { return fn(); }, register(meta, Component) { const entry = { meta, Component }; slots.push(entry); return () => { const i = slots.indexOf(entry); if (i >= 0) slots.splice(i, 1); }; } },
       remote: { pluginInventory: { list: async () => { calls++; return response; } } },
       plugin(component) {
-        const child = context(); component.apply(child.ctx);
+        const child = context(new Set([...declared, ...component.inject])); component.apply(child.ctx);
         const fiber = { component, ctx: child.ctx, disposed: false, async dispose() { if (this.disposed) return; this.disposed = true; for (const off of child.cleanups.reverse()) await off?.(); } };
         children.push(fiber); return fiber;
       },
     };
-    return { ctx, cleanups };
+    // GUI index-CN7NIWNw.js:11 / cordis/src/reflect.ts:144-163: exact top-level inject access; children inherit declarations.
+    const guarded = new Proxy(ctx, {
+      get(target, prop, receiver) {
+        if (typeof prop === 'string' && !['effect', 'plugin'].includes(prop) && !declared.has(prop)) {
+          const error = new Error(`cannot get property "${prop}" without inject`);
+          denied.push(error.message);
+          throw error;
+        }
+        return Reflect.get(target, prop, receiver);
+      },
+    });
+    return { ctx: guarded, cleanups };
   }
-  const root = context(); api.apply(root.ctx); rootStop = root.cleanups[0];
+  const root = context(new Set(Array.from(api.inject).filter(name => name !== omitInject)));
+  api.apply(root.ctx); rootStop = root.cleanups[0];
   const settle = async () => { for (let i = 0; i < 16; i++) await Promise.resolve(); };
   await settle();
-  return { api, children, listeners, rows, slots, intervals, localeListeners, settle,
+  return { api, children, listeners, rows, slots, intervals, localeListeners, denied, warnings, settle,
     setResponse(value) { response = value; }, calls: () => calls, bindings: () => bindings,
     async poll() { for (const timer of intervals.values()) timer.fn(); await settle(); }, dispose: rootStop,
   };
@@ -776,6 +790,41 @@ function nativeInventory(history, retry) {
     { entryId: 'include:demo:dsh-replay.retry', moduleName: '@bxzy/dsh-replay/retry', enabled: retry },
   ] } };
 }
+
+test('root declared-service guard permits inventory polling and both real business callbacks', async () => {
+  const h = await rootHarness(nativeInventory(true, true));
+  try {
+    await h.poll();
+    assert.deepEqual(h.denied, [], 'root and child service access must be authorized by actual plugin.inject');
+    assert.equal(h.warnings.length, 0);
+    assert.equal(h.calls(), 2);
+    assert.deepEqual(h.children.map(child => child.component.name), ['dsh-replay.history', 'dsh-replay.retry']);
+    assert.equal(h.listeners.size, 1);
+    assert.equal(h.rows.size, 2);
+    assert.equal(h.slots.filter(slot => slot.meta.key === 'user').length, 1);
+  } finally { await h.dispose(); }
+  assert.equal(h.intervals.size, 0);
+  assert.equal(h.listeners.size, 0);
+  assert.equal(h.rows.size, 0);
+  assert.equal(h.slots.length, 0);
+  assert.equal(h.localeListeners.size, 0);
+});
+
+test('root service guard rejects namespace-only authorization before either child starts', async () => {
+  const h = await rootHarness(nativeInventory(true, true), { omitInject: 'remote' });
+  try {
+    await h.poll();
+    assert.equal(h.api.inject.includes('remote.pluginInventory'), true);
+    assert.deepEqual(h.denied, Array(2).fill('cannot get property "remote" without inject'));
+    assert.equal(h.warnings.length, 1);
+    assert.equal(h.warnings[0][1].message, 'cannot get property "remote" without inject');
+    assert.equal(h.calls(), 0);
+    assert.equal(h.children.length, 0);
+    assert.equal(h.slots.length, 0);
+    assert.equal(h.listeners.size, 0);
+  } finally { await h.dispose(); }
+  assert.equal(h.intervals.size, 0);
+});
 
 test('root owns one 1000ms poll and isolated real business callbacks; all four native states work', async () => {
   for (const [history, retry] of [[false, false], [true, false], [false, true], [true, true]]) {
